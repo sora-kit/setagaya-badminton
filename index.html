@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>バドミントン空き状況</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--bg:#fbfbfa;--fg:#1c1b19;--mut:#6f6c66;--line:#e4e1db;--card:#fff;--acc:#12694c;--acc2:#e8f2ee;--warn:#8a4b12;--hl:#f3f8f5}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#161513;--fg:#ecebe6;--mut:#9c988f;--line:#2e2c28;--card:#1f1e1b;--acc:#68c8a2;--acc2:#17322a;--warn:#d99a54;--hl:#1a2621}}
+:root[data-theme=dark]{--bg:#161513;--fg:#ecebe6;--mut:#9c988f;--line:#2e2c28;--card:#1f1e1b;--acc:#68c8a2;--acc2:#17322a;--warn:#d99a54;--hl:#1a2621}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);padding:20px 16px 70px;
+font:16px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+.w{max-width:660px;margin:0 auto}
+h1{font-size:20px;margin:0 0 2px}
+.upd{color:var(--mut);font-size:13px;margin-bottom:18px}
+.upd b{color:var(--fg)}
+.nx{opacity:.75}
+h2{font-size:14px;letter-spacing:.06em;color:var(--mut);margin:28px 0 10px;font-weight:600}
+h2 i{font-style:normal;color:var(--acc);font-weight:700}
+.warn{background:var(--acc2);border:1px solid var(--warn);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:13.5px;margin-bottom:14px}
+.lot{background:var(--acc);color:var(--bg);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:14px;display:none}
+.lot a{color:var(--bg);font-weight:700}
+.bar{display:flex;gap:8px;margin-bottom:12px}
+.bar button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--mut);
+border-radius:99px;padding:6px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+.bar button.on{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:700}
+.c{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:13px 14px;margin-bottom:9px}
+.c.hit{background:var(--hl);border-color:var(--acc)}
+.when{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.when b{font-size:19px;font-variant-numeric:tabular-nums}
+.wd{color:var(--mut);font-size:13px}
+.no{font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);
+border:1px solid var(--line);border-radius:4px;padding:3px 5px;letter-spacing:.02em;
+margin-left:auto;align-self:center}
+.time{font-size:15px;font-variant-numeric:tabular-nums;margin-left:2px}
+.tag{font-size:11px;font-weight:700;background:var(--acc);color:var(--bg);border-radius:3px;padding:2px 7px}
+.where{margin-top:5px;font-weight:600}
+.rm{display:block;font-weight:400;font-size:13px;color:var(--mut);margin-top:1px}
+.ar{font-size:12px}
+.ct{font-size:12px;color:var(--acc);white-space:nowrap}
+.meta{display:flex;gap:14px;flex-wrap:wrap;color:var(--mut);font-size:12.5px;margin-top:6px}
+.act{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.seen{color:var(--mut);margin-left:6px}
+.prev{color:var(--warn);margin-left:6px;font-size:12px}
+.c.carried{opacity:.72}
+.acc{display:flex;flex-direction:column;gap:4px;flex:0 0 140px;text-align:right;font-size:12.5px;line-height:1.2;color:var(--mut);white-space:nowrap}
+.bk{background:var(--acc);color:var(--bg);border:0;border-radius:7px;padding:9px 18px;
+font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.bk:active{opacity:.8}
+.bk.chk{background:transparent;color:var(--acc);border:1.5px solid var(--acc);padding:8px 16px}
+.setup{font-size:13.5px;color:var(--mut);background:var(--card);border:1px solid var(--line);
+border-radius:10px;padding:14px;margin-top:10px}
+.setup p{margin:0 0 10px}.setup p:last-child{margin:0}
+.setup b{color:var(--fg)}
+.bmwrap{text-align:center;margin:14px 0 12px}
+.bm{display:inline-block;background:var(--acc);color:var(--bg);text-decoration:none;
+border-radius:7px;padding:10px 18px;font-weight:700;font-size:14.5px;cursor:grab}
+.bm:active{cursor:grabbing}
+.cp{margin-left:8px;background:var(--card);color:var(--fg);border:1px solid var(--line);
+border-radius:7px;padding:9px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+.hint{display:block;font-size:11.5px;opacity:.75;margin-top:6px}
+.alarm{background:var(--acc2);border-left:3px solid var(--warn);padding:9px 11px;border-radius:5px}
+.setup ol{margin:0 0 10px;padding-left:1.3em}
+.setup li{margin-bottom:7px}
+.cav{font-size:12px;opacity:.85}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:10px;
+padding:22px 16px;text-align:center;color:var(--mut);font-size:14px}
+.empty span{font-size:12.5px}
+details{margin-top:26px}
+summary{cursor:pointer;color:var(--mut);font-size:13px}
+details ul{list-style:none;padding:0;margin:10px 0 0;font-size:13px}
+details li{padding:7px 0;border-bottom:1px solid var(--line);color:var(--mut)}
+details li b{color:var(--fg);font-weight:600;margin-right:6px}
+details li span{float:right}
+footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);color:var(--mut);font-size:12px;line-height:1.8}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140%);
+background:var(--fg);color:var(--bg);border-radius:8px;padding:12px 16px;font-size:13.5px;
+max-width:92vw;transition:transform .25s;z-index:9;line-height:1.55}
+#toast.on{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>バドミントン空き状況</h1>
+<div class="upd" id="gen" data-next="2026-10-02T23:20:00+09:00">世田谷区けやきネット ／ 巡回している87施設（用賀駅から近い順）<br>
+けやきネットから取得 <b>10月2日 12:30</b>
+<span class="nx">／ 次回 10月2日 23:20〜23:25 頃</span></div>
+<div class="warn" id="stale" hidden>⚠ 予定していた 10/2 23:20 の巡回（毎日23:20）が行われていません。この一覧は古い可能性があります（巡回サーバーが停止していた場合に起こります）。</div>
+<div class="lot" id="lot">📌 <b>今月の抽選申込期間です（毎月1〜4日）</b><br>
+登録している活動施設の抽選申込はお早めに → <a href="https://setagaya.keyakinet.net/Web/Home/WgR_ModeSelect" target="_blank" rel="noopener">けやきネットを開く</a></div>
+
+<h2>予約できる枠 <i>0</i>件<span style="font-weight:400;color:var(--mut)"> ／ 狙っている時間帯 0件</span></h2>
+<div class="bar"><button class="on" data-f="all">すべて</button><button data-f="hit">平日夜・土曜午前・日曜夜だけ</button></div>
+<div id="open"><div class="empty">いま予約できる枠はありません。<br><span>世田谷区の学校体育館はほぼ埋まっています。抽選での確保が本線です。</span></div></div>
+
+<h2>キャンセル手続き中 <i>0</i>件</h2>
+<div style="color:var(--mut);font-size:12.5px;margin:-4px 0 12px"><b style="color:var(--fg)">まだ予約できません。</b>利用日の8日以前のキャンセルは<b style="color:var(--fg)">翌日12:00にまとめて開放</b>されます（7日以内ならその場で予約可）。人気枠は開放から十数分で埋まります。</div>
+<div id="cancel"><div class="empty">取消処理中の枠はありません。</div></div>
+
+<!-- 初回セッティングは 2026-09-18 本人指示で非表示。中身は消していないので、
+     表示に戻すときは下の <details> から hidden を外すだけでよい。 -->
+<details id="setup" hidden><summary>初回だけの準備（1分）：予約をワンタップに近づける</summary>
+<div class="setup">
+<p class="alarm">下の緑のリンクは<b>押しても動きません</b>。ブックマークに登録して、
+<b>けやきネットのページ上でタップ</b>して使うものです。</p>
+<p class="bmwrap">
+<a class="bm" href="javascript:%28function%20%28%29%20%7B%20if%20%28location.hostname.indexOf%28%22keyakinet%22%29%20%3C%200%29%20%7B%20alert%28%22%E3%81%93%E3%82%8C%E3%81%AF%E3%83%96%E3%83%83%E3%82%AF%E3%83%9E%E3%83%BC%E3%82%AF%E3%81%AB%E7%99%BB%E9%8C%B2%E3%81%97%E3%81%A6%E4%BD%BF%E3%81%86%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%A7%E3%81%99%E3%80%82%5Cn%5Cn%22%20%2B%20%221%29%20%E3%81%93%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%96%E3%83%83%E3%82%AF%E3%83%9E%E3%83%BC%E3%82%AF%E3%83%90%E3%83%BC%E3%81%AB%E3%83%89%E3%83%A9%E3%83%83%E3%82%B0%EF%BC%88iPhone%E3%81%AF%E3%83%96%E3%83%83%E3%82%AF%E3%83%9E%E3%83%BC%E3%82%AF%E3%82%92%E4%BD%9C%E3%81%A3%E3%81%A6URL%E3%82%92%E8%B2%BC%E3%82%8A%E6%9B%BF%E3%81%88%EF%BC%89%5Cn%22%20%2B%20%222%29%20%E7%A9%BA%E3%81%8D%E7%8A%B6%E6%B3%81%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%A7%E3%80%8C%E4%BA%88%E7%B4%84%E3%81%99%E3%82%8B%E3%80%8D%E3%82%92%E6%8A%BC%E3%81%99%5Cn%22%20%2B%20%223%29%20%E3%81%91%E3%82%84%E3%81%8D%E3%83%8D%E3%83%83%E3%83%88%E3%81%8C%E9%96%8B%E3%81%84%E3%81%9F%E3%82%89%E3%80%81%E3%81%9D%E3%81%AE%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%A7%E3%81%93%E3%81%AE%E3%83%96%E3%83%83%E3%82%AF%E3%83%9E%E3%83%BC%E3%82%AF%E3%82%92%E3%82%BF%E3%83%83%E3%83%97%5Cn%5Cn%22%20%2B%20%22%E3%81%84%E3%81%BE%E9%96%8B%E3%81%84%E3%81%A6%E3%81%84%E3%82%8B%E3%81%AE%E3%81%AF%E3%81%91%E3%82%84%E3%81%8D%E3%83%8D%E3%83%83%E3%83%88%E3%81%A7%E3%81%AF%E3%81%AA%E3%81%84%E3%81%AE%E3%81%A7%E3%80%81%E4%BD%95%E3%82%82%E3%81%97%E3%81%BE%E3%81%9B%E3%82%93%E3%80%82%22%29%3B%20return%3B%20%7D%20var%20H%20%3D%20location.hash%20%7C%7C%20%22%22%3B%20var%20m%20%3D%20H.match%28%2F%5B%23%26%5Dbd%3D%28%5B%5E%26%5D%2B%29%2F%29%3B%20if%20%28%21m%29%20%7B%20alert%28%22%E4%BA%88%E7%B4%84%E3%81%99%E3%82%8B%E6%9E%A0%E3%81%AE%E6%83%85%E5%A0%B1%E3%81%8C%E8%A6%8B%E3%81%A4%E3%81%8B%E3%82%8A%E3%81%BE%E3%81%9B%E3%82%93%E3%80%82%5Cn%E7%A9%BA%E3%81%8D%E7%8A%B6%E6%B3%81%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AE%E3%80%8C%E4%BA%88%E7%B4%84%E3%81%99%E3%82%8B%E3%80%8D%E3%81%8B%E3%82%89%E3%81%91%E3%82%84%E3%81%8D%E3%83%8D%E3%83%83%E3%83%88%E3%82%92%E9%96%8B%E3%81%8D%E7%9B%B4%E3%81%97%E3%80%81%5Cn%E3%81%9D%E3%81%AE%E7%94%BB%E9%9D%A2%E3%81%A7%E3%82%82%E3%81%86%E4%B8%80%E5%BA%A6%E3%81%93%E3%81%AE%E3%83%96%E3%83%83%E3%82%AF%E3%83%9E%E3%83%BC%E3%82%AF%E3%82%92%E3%82%BF%E3%83%83%E3%83%97%E3%81%97%E3%81%A6%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%E3%80%82%22%29%3B%20return%3B%20%7D%20var%20plan%3B%20try%20%7B%20plan%20%3D%20JSON.parse%28decodeURIComponent%28m%5B1%5D%29%29%3B%20%7D%20catch%20%28e%29%20%7B%20alert%28%22%E6%9E%A0%E3%81%AE%E6%83%85%E5%A0%B1%E3%82%92%E8%AA%AD%E3%82%81%E3%81%BE%E3%81%9B%E3%82%93%E3%81%A7%E3%81%97%E3%81%9F%E3%80%82%22%29%3B%20return%3B%20%7D%20var%20box%20%3D%20document.createElement%28%22div%22%29%3B%20box.style.cssText%20%3D%20%22position%3Afixed%3Bleft%3A0%3Bright%3A0%3Btop%3A0%3Bz-index%3A99999%3Bbackground%3A%2312694c%3Bcolor%3A%23fff%3B%22%20%2B%20%22font%3A14px%2F1.5%20sans-serif%3Bpadding%3A10px%2014px%3Btext-align%3Acenter%22%3B%20document.body.appendChild%28box%29%3B%20var%20say%20%3D%20function%20%28t%29%20%7B%20box.textContent%20%3D%20%22%E3%81%91%E3%82%84%E3%81%8D%E3%83%8D%E3%83%83%E3%83%88%20%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97%EF%BC%9A%20%22%20%2B%20t%3B%20%7D%3B%20say%28%22%E9%96%8B%E5%A7%8B%E2%80%A6%22%29%3B%20var%20P%20%3D%20new%20DOMParser%28%29%3B%20function%20post%28url%2C%20doc%2C%20target%2C%20extra%2C%20over%29%20%7B%20var%20fd%20%3D%20new%20URLSearchParams%28%29%3B%20Array.prototype.forEach.call%28doc.querySelectorAll%28%22form%20input%22%29%2C%20function%20%28i%29%20%7B%20var%20n%20%3D%20i.getAttribute%28%22name%22%29%2C%20t%20%3D%20%28i.getAttribute%28%22type%22%29%20%7C%7C%20%22text%22%29.toLowerCase%28%29%3B%20if%20%28%21n%20%7C%7C%20t%20%3D%3D%3D%20%22button%22%20%7C%7C%20t%20%3D%3D%3D%20%22submit%22%29%20return%3B%20if%20%28t%20%3D%3D%3D%20%22checkbox%22%20%7C%7C%20t%20%3D%3D%3D%20%22radio%22%29%20%7B%20if%20%28i.hasAttribute%28%22checked%22%29%29%20fd.append%28n%2C%20i.value%20%7C%7C%20%22on%22%29%3B%20%7D%20else%20fd.append%28n%2C%20i.value%20%7C%7C%20%22%22%29%3B%20%7D%29%3B%20fd.set%28%22__EVENTTARGET%22%2C%20target%29%3B%20fd.set%28%22__EVENTARGUMENT%22%2C%20%22%22%29%3B%20if%20%28over%29%20Object.keys%28over%29.forEach%28function%20%28k%29%20%7B%20fd.set%28k%2C%20over%5Bk%5D%29%3B%20%7D%29%3B%20%28extra%20%7C%7C%20%5B%5D%29.forEach%28function%20%28kv%29%20%7B%20fd.append%28kv%5B0%5D%2C%20kv%5B1%5D%29%3B%20%7D%29%3B%20return%20fetch%28url%2C%20%7B%20method%3A%20%22POST%22%2C%20body%3A%20fd%2C%20credentials%3A%20%22same-origin%22%2C%20headers%3A%20%7B%20%22Content-Type%22%3A%20%22application%2Fx-www-form-urlencoded%22%20%7D%20%7D%29.then%28function%20%28r%29%20%7B%20return%20r.text%28%29%3B%20%7D%29%20.then%28function%20%28h%29%20%7B%20return%20P.parseFromString%28h%2C%20%22text%2Fhtml%22%29%3B%20%7D%29%3B%20%7D%20var%20fail%20%3D%20function%20%28msg%29%20%7B%20box.style.background%20%3D%20%22%238a2b12%22%3B%20box.textContent%20%3D%20%22%E3%81%91%E3%82%84%E3%81%8D%E3%83%8D%E3%83%83%E3%83%88%20%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97%EF%BC%9A%20%22%20%2B%20msg%20%2B%20%22%EF%BC%88%E6%89%8B%E5%8B%95%E3%81%A7%E6%8E%A2%E3%81%97%E3%81%A6%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%EF%BC%89%22%3B%20setTimeout%28function%20%28%29%20%7B%20box.remove%28%29%3B%20%7D%2C%2012000%29%3B%20%7D%3B%20say%28%22%E6%96%BD%E8%A8%AD%E3%82%92%E6%A4%9C%E7%B4%A2%E2%80%A6%22%29%3B%20fetch%28%22%2FWeb%2FHome%2FWgR_ModeSelect%22%2C%20%7B%20credentials%3A%20%22same-origin%22%20%7D%29%20.then%28function%20%28r%29%20%7B%20return%20r.text%28%29%3B%20%7D%29%20.then%28function%20%28h%29%20%7B%20return%20P.parseFromString%28h%2C%20%22text%2Fhtml%22%29%3B%20%7D%29%20.then%28function%20%28doc%29%20%7B%20return%20post%28%22%2FWeb%2FHome%2FWgR_ModeSelect%22%2C%20doc%2C%20%22searchShisetsuName%22%2C%20null%2C%20%7B%20shisetsuNameTxt%3A%20plan.f%20%7D%29%3B%20%7D%29%20.then%28function%20%28doc%29%20%7B%20say%28%22%E6%96%BD%E8%A8%AD%E3%82%92%E9%81%B8%E6%8A%9E%E2%80%A6%22%29%3B%20var%20cb%20%3D%20null%3B%20Array.prototype.forEach.call%28doc.querySelectorAll%28%27input%5Bname%3D%22checkShisetsu%22%5D%27%29%2C%20function%20%28i%29%20%7B%20if%20%28cb%29%20return%3B%20var%20l%20%3D%20doc.querySelector%28%27label%5Bfor%3D%22%27%20%2B%20i.id%20%2B%20%27%22%5D%27%29%3B%20if%20%28l%20%26%26%20l.textContent.trim%28%29.indexOf%28plan.f%29%20%3D%3D%3D%200%29%20cb%20%3D%20i%3B%20%7D%29%3B%20if%20%28%21cb%29%20throw%20new%20Error%28%22%E6%96%BD%E8%A8%AD%E3%81%8C%E8%A6%8B%E3%81%A4%E3%81%8B%E3%82%8A%E3%81%BE%E3%81%9B%E3%82%93%22%29%3B%20return%20post%28%22%2FWeb%2FYoyaku%2FWgR_ShisetsuKensaku%22%2C%20doc%2C%20%22next%22%2C%20%5B%5B%22checkShisetsu%22%2C%20cb.value%5D%5D%29%3B%20%7D%29%20.then%28function%20%28doc%29%20%7B%20say%28%221%E3%83%B6%E6%9C%88%E8%A1%A8%E7%A4%BA%E3%81%AB%E5%88%87%E6%9B%BF%E2%80%A6%22%29%3B%20return%20post%28%22%2FWeb%2FYoyaku%2FWgR_ShisetsubetsuAkiJoukyou%22%2C%20doc%2C%20%22hyouji%22%2C%20null%2C%20%7B%20radioPeriod%3A%20%221%E3%83%B6%E6%9C%88%22%20%7D%29%3B%20%7D%29%20.then%28function%20%28doc%29%20%7B%20say%28%22%E6%97%A5%E4%BB%98%E3%82%92%E9%81%B8%E6%8A%9E%E2%80%A6%22%29%3B%20var%20dd%20%3D%20parseInt%28plan.d.split%28%22-%22%29%5B2%5D%2C%2010%29%3B%20var%20roomKey%20%3D%20%28plan.r%20%7C%7C%20%22%22%29.replace%28%2F%5B%EF%BC%88%28%5D.%2A%2F%2C%20%22%22%29.trim%28%29%3B%20var%20val%20%3D%20null%3B%20Array.prototype.forEach.call%28doc.querySelectorAll%28%22table.calendar%22%29%2C%20function%20%28tb%29%20%7B%20var%20heads%20%3D%20Array.prototype.map.call%28tb.querySelectorAll%28%22thead%20th.day%22%29%2C%20function%20%28th%29%20%7B%20return%20parseInt%28th.textContent.trim%28%29%2C%2010%29%3B%20%7D%29%3B%20Array.prototype.forEach.call%28tb.querySelectorAll%28%22tbody%20tr%22%29%2C%20function%20%28tr%29%20%7B%20var%20rl%20%3D%20tr.querySelector%28%22td.shisetsu%22%29%3B%20var%20rn%20%3D%20rl%20%3F%20rl.textContent.replace%28%2F%5B%EF%BC%88%28%5D.%2A%2F%2C%20%22%22%29.trim%28%29%20%3A%20%22%22%3B%20if%20%28roomKey%20%26%26%20rn%20%21%3D%3D%20roomKey%29%20return%3B%20var%20tds%20%3D%20Array.prototype.filter.call%28tr.children%2C%20function%20%28td%29%20%7B%20return%20td.className.indexOf%28%22shisetsu%22%29%20%3C%200%3B%20%7D%29%3B%20tds.forEach%28function%20%28td%2C%20i%29%20%7B%20var%20inp%20%3D%20td.querySelector%28%27input%5Bname%3D%22checkdate%22%5D%27%29%3B%20if%20%28inp%20%26%26%20heads%5Bi%5D%20%3D%3D%3D%20dd%29%20val%20%3D%20inp.value%3B%20%7D%29%3B%20%7D%29%3B%20%7D%29%3B%20if%20%28%21val%29%20throw%20new%20Error%28%22%E3%81%9D%E3%81%AE%E6%97%A5%E3%81%AF%E9%81%B8%E3%81%B9%E3%81%BE%E3%81%9B%E3%82%93%E3%80%82%E5%9F%8B%E3%81%BE%E3%81%A3%E3%81%9F%E5%8F%AF%E8%83%BD%E6%80%A7%E3%81%8C%E3%81%82%E3%82%8A%E3%81%BE%E3%81%99%22%29%3B%20return%20post%28%22%2FWeb%2FYoyaku%2FWgR_ShisetsubetsuAkiJoukyou%22%2C%20doc%2C%20%22next%22%2C%20%5B%5B%22checkdate%22%2C%20val%5D%5D%29%3B%20%7D%29%20.then%28function%20%28%29%20%7B%20say%28%22%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8D%E3%81%BE%E3%81%99%E2%80%A6%22%29%3B%20try%20%7B%20window.onbeforeunload%20%3D%20null%3B%20%7D%20catch%20%28e%29%20%7B%7D%20location.href%20%3D%20%22%2FWeb%2FYoyaku%2FWgR_JikantaibetsuAkiJoukyou%22%3B%20%7D%29%20.catch%28function%20%28e%29%20%7B%20fail%28e.message%20%7C%7C%20String%28e%29%29%3B%20%7D%29%3B%20%7D%29%28%29%3B" id="bmlink" draggable="true">⠿&nbsp; けやきネットへ飛ぶ</a>
+<button class="cp" id="bmcopy">URLをコピー</button>
+<span class="hint">↑ ブックマークバーにドラッグ</span></p>
+<ol>
+<li><b>パソコン</b>：上のリンクをブックマークバーへドラッグ。<br>
+<b>iPhone</b>：「URLをコピー」→ 適当なページをブックマークに追加 →
+ブックマークを編集してURL欄に貼り付け。</li>
+<li>空き状況の枠で「<b>予約する</b>」（キャンセル手続き中の枠は「<b>いま確認する</b>」）を押す（けやきネットが新しいタブで開きます）</li>
+<li>けやきネットが開いたら、<b>そのページで</b>ブックマークをタップ</li>
+</ol>
+<p>その枠の時間帯別画面まで自動で進みます。あとは ○ を選んで「次へ進む」だけ。
+<b>ログインは行いません</b>（ご自身でどうぞ）。</p>
+<p class="cav">仕組み：けやきネットは全画面がPOSTで、特定の枠へのリンクを作れません。
+けやきネット上で動くスクリプトだけがセッションを進められるため、この形にしています。<br>
+Android Chrome はブックマークレットに対応していません。その場合は「予約する」でコピーされる
+文字列を使い、けやきネットの「施設名から探す」から手動で辿ってください。</p>
+</div></details>
+
+<details><summary>巡回している87施設を見る</summary><ul><li><b>瀬田中学校</b> 用賀駅 🚲4分　二子玉川駅 🚶15分<span>体育館 約3面 ／ 格技室 1面（3面のスペースあり） ※</span></li><li><b>用賀中学校</b> 用賀駅 🚶14分 🚲4分<span>約3面</span></li><li><b>瀬田小学校</b> 用賀駅 🚲4分　二子玉川駅 🚶14分<span>約2面 ※</span></li><li><b>桜町小学校</b> 用賀駅 🚶14分 🚲5分<span>約3面</span></li><li><b>二子玉川小学校</b> 用賀駅 🚲5分　二子玉川駅 🚶7分<span>約3面</span></li><li><b>用賀小学校</b> 用賀駅 🚶21分 🚲7分<span>約2面 ※</span></li><li><b>深沢中学校</b> 用賀駅 🚲7分　桜新町駅 🚶13分<span>約3面</span></li><li><b>玉川中学校</b> 用賀駅 🚲8分　上野毛駅 🚶10分<span>体育館 約3面 ／ 格技室 約2面</span></li><li><b>中町小学校</b> 用賀駅 🚲8分　上野毛駅 🚶14分<span>約3面</span></li><li><b>深沢小学校</b> 用賀駅 🚲8分　桜新町駅 🚶15分<span>約2面 ※</span></li><li><b>松丘小学校</b> 用賀駅 🚲9分　上町駅 🚶8分<span>約3面</span></li><li><b>弦巻中学校</b> 用賀駅 🚲9分　上町駅 🚶12分<span>2面（3面のスペースあり）</span></li><li><b>砧南中学校</b> 用賀駅 🚲9分　二子玉川駅 🚶24分<span>約3面</span></li><li><b>桜丘中学校</b> 用賀駅 🚲10分　千歳船橋駅 🚶14分<span>約3面</span></li><li><b>桜丘小学校</b> 用賀駅 🚲10分　千歳船橋駅 🚶12分<span>約3面</span></li><li><b>玉川小学校</b> 用賀駅 🚲10分　等々力駅 🚶8分<span>約3面</span></li><li><b>砧南小学校</b> 用賀駅 🚲10分　二子玉川駅 🚶27分<span>約3面</span></li><li><b>駒沢小学校</b> 用賀駅 🚲10分　駒沢大学駅 🚶7分<span>約3面</span></li><li><b>桜小学校</b> 用賀駅 🚲11分　上町駅 🚶4分<span>約2面 ※</span></li><li><b>駒沢中学校</b> 用賀駅 🚲11分　駒沢大学駅 🚶12分<span>約3面</span></li><li><b>弦巻小学校</b> 用賀駅 🚲11分　松陰神社前駅 🚶9分<span>約2面 ※</span></li><li><b>東深沢中学校</b> 用賀駅 🚲12分　尾山台駅 🚶21分<span>約3面</span></li><li><b>桜木中学校</b> 用賀駅 🚲12分　宮の坂駅 🚶5分<span>約3面</span></li><li><b>等々力小学校</b> 用賀駅 🚲12分　尾山台駅 🚶17分<span>約2面 ※</span></li><li><b>笹原小学校</b> 用賀駅 🚲12分　千歳船橋駅 🚶6分<span>約3面</span></li><li><b>東深沢小学校</b> 用賀駅 🚲13分　尾山台駅 🚶22分<span>約3面</span></li><li><b>世田谷小学校</b> 用賀駅 🚲14分　宮の坂駅 🚶5分<span>約3面</span></li><li><b>三軒茶屋小学校</b> 用賀駅 🚲14分　西太子堂駅 🚶9分<span>約2面 ※</span></li><li><b>城山小学校</b> 用賀駅 🚲15分　宮の坂駅 🚶9分<span>約3面</span></li><li><b>尾山台中学校</b> 用賀駅 🚲15分　尾山台駅 🚶4分<span>約3面</span></li><li><b>玉堤小学校</b> 用賀駅 🚲15分　等々力駅 🚶16分<span>約3面</span></li><li><b>旭小学校</b> 用賀駅 🚲15分　三軒茶屋駅 🚶16分<span>約3面</span></li><li><b>砧小学校</b> 用賀駅 🚲16分　成城学園前駅 🚶16分<span>約2面 ※</span></li><li><b>山野小学校</b> 用賀駅 🚲16分　祖師ヶ谷大蔵駅 🚶6分<span>約2面 ※</span></li><li><b>尾山台小学校</b> 用賀駅 🚲16分　尾山台駅 🚶7分<span>約3面</span></li><li><b>中丸小学校</b> 用賀駅 🚲16分　駒沢大学駅 🚶17分<span>約3面</span></li><li><b>中里小学校</b> 用賀駅 🚲16分　三軒茶屋駅 🚶10分<span>約2面 ※</span></li><li><b>喜多見小学校</b> 用賀駅 🚲17分　成城学園前駅 🚶24分<span>約3面</span></li><li><b>八幡中学校</b> 用賀駅 🚲17分　九品仏駅 🚶11分<span>約3面</span></li><li><b>経堂小学校</b> 用賀駅 🚲17分　経堂駅 🚶13分<span>約3面</span></li><li><b>若林小学校</b> 用賀駅 🚲17分　若林駅 🚶7分<span>約2面 ※</span></li><li><b>砧中学校</b> 用賀駅 🚲18分　成城学園前駅 🚶11分<span>約3面</span></li><li><b>世田谷中学校</b> 用賀駅 🚲18分　若林駅 🚶10分<span>約3面</span></li><li><b>山崎小学校</b> 用賀駅 🚲18分　梅ヶ丘駅 🚶11分<span>約3面</span></li><li><b>赤堤小学校</b> 用賀駅 🚲18分　経堂駅 🚶10分<span>約3面</span></li><li><b>希望丘小学校</b> 用賀駅 🚲18分　千歳船橋駅 🚶16分<span>約3面</span></li><li><b>九品仏小学校</b> 用賀駅 🚲18分　九品仏駅 🚶4分<span>約3面</span></li><li><b>太子堂小学校</b> 用賀駅 🚲18分　西太子堂駅 🚶5分<span>約3面</span></li><li><b>三宿小学校</b> 用賀駅 🚲18分　三軒茶屋駅 🚶11分<span>約2面 ※</span></li><li><b>明正小学校</b> 用賀駅 🚲19分　成城学園前駅 🚶8分<span>約3面</span></li><li><b>船橋小学校</b> 用賀駅 🚲19分　千歳船橋駅 🚶15分<span>約3面</span></li><li><b>緑丘中学校</b> 用賀駅 🚲19分　桜上水駅 🚶14分<span>約3面</span></li><li><b>駒留中学校</b> 用賀駅 🚲19分　三軒茶屋駅 🚶19分<span>約3面</span></li><li><b>駒繋小学校</b> 用賀駅 🚲19分　祐天寺駅 🚶17分<span>約2面 ※</span></li><li><b>祖師谷小学校</b> 用賀駅 🚲20分　祖師ヶ谷大蔵駅 🚶8分<span>約3面</span></li><li><b>太子堂中学校</b> 用賀駅 🚲20分　西太子堂駅 🚶14分<span>体育館 約3面 ／ 格技室 約3面</span></li><li><b>船橋希望中学校</b> 用賀駅 🚲21分　千歳船橋駅 🚶19分<span>約3面</span></li><li><b>塚戸小学校</b> 用賀駅 🚲21分　千歳烏山駅 🚶23分<span>約3面</span></li><li><b>八幡小学校</b> 用賀駅 🚲21分　九品仏駅 🚶10分<span>約3面</span></li><li><b>千歳台小学校</b> 用賀駅 🚲21分　八幡山駅 🚶20分<span>約3面</span></li><li><b>八幡山小学校</b> 用賀駅 🚲21分　上北沢駅 🚶14分<span>約3面</span></li><li><b>代沢小学校</b> 用賀駅 🚲21分　世田谷代田駅 🚶13分<span>約3面</span></li><li><b>多聞小学校</b> 用賀駅 🚲21分　池ノ上駅 🚶14分<span>約2面 ※</span></li><li><b>喜多見中学校</b> 用賀駅 🚲22分　喜多見駅 🚶25分<span>約3面</span></li><li><b>松沢小学校</b> 用賀駅 🚲22分　下高井戸駅 🚶6分<span>約3面</span></li><li><b>松沢中学校</b> 用賀駅 🚲22分　桜上水駅 🚶7分<span>体育館 約3面 ／ 格技室 約3面</span></li><li><b>松原小学校</b> 用賀駅 🚲23分　明大前駅 🚶6分<span>約2面 ※</span></li><li><b>三宿中学校</b> 用賀駅 🚲23分　三軒茶屋駅 🚶13分<span>体育館 約3面 ／ 格技室 約1面</span></li><li><b>池尻小学校</b> 用賀駅 🚲23分　池尻大橋駅 🚶12分<span>約3面</span></li><li><b>奥沢中学校</b> 用賀駅 🚲23分　緑が丘駅 🚶7分<span>約3面</span></li><li><b>千歳中学校</b> 用賀駅 🚲24分　千歳烏山駅 🚶19分<span>約3面</span></li><li><b>芦花中学校</b> 用賀駅 🚲24分　芦花公園駅 🚶12分<span>約3面</span></li><li><b>奥沢小学校</b> 用賀駅 🚲24分　奥沢駅 🚶9分<span>約3面</span></li><li><b>芦花小学校</b> 用賀駅 🚲24分　芦花公園駅 🚶9分<span>約2面 ※</span></li><li><b>富士中学校</b> 用賀駅 🚲25分　駒場東大前駅 🚶16分<span>約3面</span></li><li><b>東玉川小学校</b> 用賀駅 🚲26分　石川台駅 🚶8分<span>2面 ※</span></li><li><b>池之上小学校</b> 用賀駅 🚲26分　池ノ上駅 🚶1分<span>約3面</span></li><li><b>下北沢小学校</b> 用賀駅 🚲27分　新代田駅 🚶10分<span>約3面</span></li><li><b>千歳小学校</b> 用賀駅 🚲28分　成城学園前駅 🚶20分<span>約2面 ※</span></li><li><b>上北沢小学校</b> 用賀駅 🚲29分　上北沢駅 🚶5分<span>約3面</span></li><li><b>北沢中学校</b> 用賀駅 🚲29分　笹塚駅 🚶10分<span>体育館 約3面 ／ 格技室 約3面</span></li><li><b>烏山小学校</b> 用賀駅 🚲30分　仙川駅 🚶12分<span>約3面</span></li><li><b>烏山中学校</b> 用賀駅 🚲30分　千歳烏山駅 🚶7分<span>約3面</span></li><li><b>上祖師谷中学校</b> 用賀駅 🚲31分　仙川駅 🚶15分<span>約3面</span></li><li><b>烏山北小学校</b> 用賀駅 🚲32分　千歳烏山駅 🚶11分<span>約3面</span></li><li><b>武蔵丘小学校</b> 用賀駅 🚲32分　芦花公園駅 🚶14分<span>約3面</span></li><li><b>給田小学校</b> 用賀駅 🚲34分　千歳烏山駅 🚶16分<span>約3面</span></li></ul></details>
+
+<footer>
+データは<b>ゲスト参照</b>で取得（毎晩23:20頃・リアルタイムではありません）。最新は<a href="https://setagaya.keyakinet.net/Web/Home/WgR_ModeSelect" target="_blank" rel="noopener">けやきネット</a>でご確認ください。<br>
+🚲は用賀駅から／🚶はその施設の最寄駅から（Googleマップの目安）。料金は<b>その枠にかかる金額</b>のみ。<br>
+🏸<b>「約○面」は登録面積÷190㎡の推定値</b>、<b>「○面」は現地で数えた実測値</b>です（※は登録面積に疑義がある室で、実測値を表示）。
+</footer>
+</div>
+<div id="toast"></div>
+<script>
+(function(){
+  var d=new Date(); if(d.getDate()<=4) document.getElementById('lot').style.display='block';
+  var g=document.getElementById('gen'), st=document.getElementById('stale');
+  if(g&&st&&g.dataset.next){var nx=new Date(g.dataset.next); if(!isNaN(nx)&&Date.now()-nx.getTime()>45*60*1000) st.hidden=false;}
+  document.querySelectorAll('.bar button').forEach(function(b){
+    b.onclick=function(){
+      document.querySelectorAll('.bar button').forEach(function(x){x.classList.remove('on')});
+      b.classList.add('on');
+      var only=b.dataset.f==='hit';
+      document.querySelectorAll('#open .c').forEach(function(c){
+        c.style.display=(only&&!c.classList.contains('hit'))?'none':'';
+      });
+    };
+  });
+  var bl=document.getElementById('bmlink');
+  if(bl) bl.onclick=function(e){
+    e.preventDefault();
+    toast('これは<b>ブックマークに登録して使う</b>リンクです。<br>'
+      +'パソコンはブックマークバーにドラッグ、iPhoneは「URLをコピー」して<br>'
+      +'ブックマークのURL欄に貼り付けてください。');
+    return false;
+  };
+  var bc=document.getElementById('bmcopy');
+  if(bc) bc.onclick=function(){
+    var u=bl.getAttribute('href');
+    var done=function(){toast('ブックマークレットのURLをコピーしました。<br>ブックマークを1つ作り、そのURL欄に貼り付けてください。')};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(done,done);}else{done();}
+  };
+  function toast(m){var t=document.getElementById('toast');t.innerHTML=m;t.classList.add('on');
+    clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('on')},6000);}
+  document.querySelectorAll('.bk').forEach(function(b){
+    b.onclick=function(){
+      var s=JSON.parse(b.dataset.slot), chk=b.classList.contains('chk');
+      var txt=s.f+' '+s.label+' '+s.t+(s.m?' '+s.m:'');
+      var plan={f:s.f,d:s.d,r:s.r,t:s.t,m:s.m};
+      var url='https://setagaya.keyakinet.net/Web/Home/WgR_ModeSelect#bd='+encodeURIComponent(JSON.stringify(plan));
+      var go=function(){
+        toast('けやきネットを開きました。<br><b>ブックマークの「けやきネットへ飛ぶ」を1回タップ</b>すると、'
+          +s.label+' '+s.t+' の画面まで自動で進みます。<br>'
+          +(chk?'🔄 のままならまだキャンセル手続き中、○ に変わっていれば予約できます。<br>':'')
+          +'<span style="opacity:.75">使えない場合は「施設名から探す」で <b>'+txt+'</b>（コピー済み）</span>');
+        window.open(url,'_blank','noopener');
+      };
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(go,go);}else{go();}
+    };
+  });
+})();
+</script>
+</body>
+</html>
